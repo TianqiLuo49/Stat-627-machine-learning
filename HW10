@@ -1,0 +1,116 @@
+## Stat 627 HW10
+
+##Tianqi Luo
+
+##Problem 1
+##See pages 2 & 3##
+![Problem 1(a)](/Users/naughtyboy35/Desktop/Stat 627 /HW/HW10/Tree.jpeg)
+
+![Problem 1(b)](/Users/naughtyboy35/Desktop/Stat 627 /HW/HW10/Diagram.jpeg)
+
+
+
+##Problem 2
+
+**If we use majority vote approach, the final classification would be red because 6 of them classify as Red and 4 of them classify as Green. If we use average probability, the final classification would be Green since the average is 0.45**
+
+##Problem 3
+```{r}
+library(ISLR)
+attach(OJ)
+```
+
+**(a)**
+```{r}
+set.seed(1)
+train = sample(1:nrow(OJ), 800)
+OJ_train = OJ[train, ]
+OJ_test = OJ[-train, ]
+```
+
+**(b)**
+```{r}
+library(tree)
+tree_OJ = tree(Purchase ~ ., data = OJ_train)
+summary(tree_OJ)
+```
+**The training error rate is 16.5%. Ther are 8 terminal nodes**
+
+**(c)** **Continue at Page 4**
+```{r}
+tree_OJ
+```
+
+**We pick node 7. We know that it's a terminal node because it's labeled with an asterisk. The split criterion is LoyalCH > 0.764572, the number of observations in the branch is 278 with a deviance of 86.14. 96.403% of the observations in the branch take on the value of CH, 3.597% of the values take on MM.**
+
+**(d)**
+```{r}
+plot(tree_OJ)
+text(tree_OJ)
+```
+
+**We can see that "LoyalCH" appears to be the most important predictor for "Purchase" as it appears on the top 3 nodes of the tree**
+
+
+**(e)**
+```{r}
+tree_pred = predict(tree_OJ, OJ_test, type = "class")
+table(tree_pred, OJ_test$Purchase)
+```
+
+```{r}
+tree_test_error = 1-(147+62)/(147+49+12+62)
+tree_test_error
+```
+
+**We can conclude the test error rate is 22.59259%**
+
+**(f)**
+```{r}
+cv_OJ = cv.tree(tree_OJ, FUN = prune.misclass)
+
+cv_OJ
+```
+
+
+**(g)**
+```{r}
+plot(cv_OJ$size, cv_OJ$dev, type = "b", xlab = "Size", ylab = "Deviance")
+```
+
+
+**(h)**
+**We can see from the graph that when tree size = 2 it has the lowest CV classification error rate and a small size**
+
+**(i)**
+```{r}
+help(prune.misclass)
+```
+
+
+```{r}
+prune_OJ = prune.misclass(tree_OJ, best = 2)
+plot(prune_OJ)
+text(prune_OJ)
+```
+
+**(j)**
+```{r}
+summary(prune_OJ)
+```
+**The misclassification error rate for the pruned tree is 18.25%, higher than the misclassifcation error rate for the original rate at 16.5%**
+
+**(k)**
+```{r}
+prune_pred = predict(prune_OJ, OJ_test, type = "class")
+table(prune_pred, OJ_test$Purchase)
+```
+
+```{r}
+prune_tree_test_error = 1 - (119 + 81)/(119 + 40 + 30 + 81)
+prune_tree_test_error
+```
+
+**We can see the test error rate for pruned tree is slightly higher than test error rate for tree at 25.93%**
+
+**Even though the test error rate is higher, it produced a more straightforward and simplier tree**
