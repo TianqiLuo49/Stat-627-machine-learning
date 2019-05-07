@@ -1,0 +1,128 @@
+##Stat 627 HW 8
+
+##Tianqi Luo
+
+##Problem 1
+
+
+**(a)**
+```{r}
+library(ISLR)
+attach(College)
+```
+
+
+**(a)**
+**Use least squares regressoin and stepback method**
+```{r}
+least_squares = lm(Apps ~., College)
+step(least_squares, direction = "backward")
+```
+**We can see that through backwards method, Books, Personal, Terminal, S.F.Ratio, and perc.alumni are eliminated**
+
+
+
+**Build the training and testing dataset**
+```{r}
+train = sample(1:dim(College)[1], dim(College)[1]/2)
+test = -train
+College_train = College[train, ]
+College_test = College[test, ]
+least_squares_final = lm(Apps ~. -Books - Personal - Terminal - S.F.Ratio - perc.alumni, data = College_train)
+```
+
+**Find the mean squared error for least squares**
+```{r}
+pred_lm = predict(least_squares_final, College_test)
+mse_lm = mean((pred_lm - College[test, ]$Apps)^2)
+mse_lm
+```
+
+
+
+**(b)**
+
+**Use Ridge cross-validation, and select the best lambda for ridge**
+```{r}
+library(glmnet)
+model_train = model.matrix(Apps ~., data = College_train)
+model_test = model.matrix(Apps ~., data = College_test)
+fit_ridge = glmnet(model_train, College_train$Apps, alpha = 0)
+cv_ridge = cv.glmnet(model_train, College_train$Apps, alpha = 0)
+bestlam_ridge = cv_ridge$lambda.min
+bestlam_ridge
+```
+
+**Predict the values and calculate the MSE**
+```{r}
+pred_ridge = predict(fit_ridge, s = bestlam_ridge, newx = model_test)
+mse_ridge = mean((pred_ridge - College_test$Apps)^2)
+mse_ridge
+```
+
+
+
+**(c)**
+
+**Use Lasso cross-validation and select the best lambda for lasso, select the best lambda for lasso**
+
+```{r}
+fit_lasso = glmnet(model_train, College_train$Apps, alpha = 1)
+cv_lasso = cv.glmnet(model_train, College_train$Apps, alpha = 1)
+bestlam_lasso = cv_ridge$lambda.min
+bestlam_lasso
+```
+
+**Calculate the mse for lasso**
+```{r}
+pred_lasso = predict(fit_lasso, s = bestlam_lasso, newx = model_test)
+mse_lasso = mean((pred_lasso - College_test$Apps)^2)
+mse_lasso
+```
+
+
+
+**(d)**
+
+**Use principal components and figure out the components to choose by using cross-validation**
+```{r}
+library(pls)
+fit_pcr = pcr(Apps ~., data = College_train, scale = TRUE, validation = "CV")
+validationplot(fit_pcr, val.type = "MSEP")
+```
+
+
+**Choose 10 principal components and calculate the mean squared error**
+```{r}
+pred_pcr = predict(fit_pcr, College_test, ncomp = 10)
+mse_pcr = mean((pred_pcr - College_test$Apps)^2)
+mse_pcr 
+```
+
+
+
+**(e)**
+
+**Use partial least squares cross validation to find the best number of principal components**
+```{r}
+fit_pls = plsr(Apps ~., data = College_train, scale = TRUE, validation = "CV")
+validationplot(fit_pls, val.type = "MSEP")
+```
+
+**Choose the principal component = 10 and calculate the mean squared error**
+```{r}
+pred_pls = predict(fit_pls, College_test, ncomp = 10)
+mse_pls = mean((pred_pls - College_test$Apps)^2)
+mse_pls
+```
+
+
+**Compare the mean squared errors**
+```{r}
+mse = c(mse_lm, mse_ridge, mse_lasso, mse_pcr, mse_pls)
+mse
+```
+
+**Yes there are a lot of differences between the five methods**
+
+**Least squares method appear to be the most accurate because it has the smallest mean squared error, principal components method appears to be the least accurate because it has the largest mean squared error**
