@@ -1,0 +1,176 @@
+##Stat 627
+
+##Homework 3
+
+
+**(a)**
+```{r}
+library(ISLR)
+data("Carseats")
+sales_fit = lm(Sales ~ Price + Urban + US, Carseats)
+```
+
+**(b)**
+```{r}
+summary(sales_fit)
+```
+
+**Sales = -0.054459 * price - 0.021916 * Urban + 1.200573 * US + 13.043469**
+
+
+**Urban =1 when Yes, Urban = 0 when No.**
+
+
+**US = 1 when Yes, US = 0 when No.**
+
+**c**
+
+**For the varaible Urban, the null hypothesis is not rejected because it has a larger p-value than the level of significance at 0.05, the other variables can all be rejected.** 
+
+```{r}
+sales_fit_2 = lm(Sales ~ Price + US, Carseats)
+
+anova(sales_fit_2, sales_fit)
+```
+
+**Cannot reject the null hypothesis, so Urban is not significant**
+
+**For T-statistic for H0: B2 = 0, HA: B2 != 0 is -0.081 from the summary, T^2 = F-statistic**
+
+
+
+
+
+**(d)**
+
+**Fit the smaller model**
+```{r}
+sales_fit_3 = lm(Sales ~ Price + US, Carseats)
+summary(sales_fit_3)
+```
+
+
+**(e)**
+
+**Test the linearity of Sales as a function of Price**
+```{r}
+plot(Sales ~ Price, Carseats)
+abline(lm(Sales~ Price, Carseats))
+```
+
+
+**From the scatterplot, we can see the points fall around our linear regression line, so we can assume there is linearity of sales as a function of Price**
+
+
+**Conduct the lack of fit test**
+
+**H0: There is no significant lack of fit, HA: There is a significant lack of fit**
+```{r}
+sales_fit_4_inner = lm(Sales ~ Price, Carseats)
+sales_fit_4_outer = lm(Sales ~ factor(Price), Carseats)
+anova(sales_fit_4_inner, sales_fit_4_outer)
+```
+**We can see the p-value is greater than 0.05, so we do not reject H0. We conclude that there is no significant lack of fit in this model**
+
+
+##Problem 2
+
+**(a)**
+
+**p = 0.37(1+0.37) = 0.27, so 27% of the people.**
+
+**(b)**
+
+**odds = p/(1-p) = 0.16/(1-0.16) = 0.16/0.84 = 0.19, so the odds she will default is 19%**
+
+##Problem 3
+
+**(a)**
+
+
+ln(odds) = -6 + 0.05* 40 + 1*3.5 = -0.5
+
+odds = exp(-0.5) = 0.606. 
+
+p = odds/(1+odds) = 0.606/(1+0.606) = 0.37
+
+**The The probability is 0.37**
+
+**(b)**
+
+odds = 0.5/(1-0.5) = 1
+
+ln(1) = 0
+
+-6+0.05*a + 3.5 = 0
+
+a = 50
+
+**so the student needs to study for 50 hours**
+
+## Problem 4
+
+**(a)**
+
+**d1 = sqrt(3^2) = sqrt(9) = 3**
+
+**d2 = sqrt(2^2) = sqrt(4) = 2**
+
+**d3 = sqrt(1^2 + 3^2) = sqrt(10) = 3.16**
+
+**d4 = sqrt(1^2 + 2^2) = sqrt(5) = 2.24**
+
+**d5 = sqrt(1^2 + 1^2) = sqrt(2) = 1.41**
+
+**d6 = sqrt(1^2 + 1^2 + 1^2) = sqrt(3) = 1.73**
+
+**(b)**
+
+**When k=1, we find the closest neighbor to our test point, which is observation 5. At observation 5 Y is Green, or our prediction should be green.** 
+
+**(c)**
+
+**When k = 3, we find the cloeset 3 neighbors to our test point, which are observation 5, observation 6 and observation 2. Out of these 3 observations, 2/3 of them are Red and 1/3 of them is Green, so our prediction should be Red.** 
+
+**(d)**
+
+**Since it's highly nonlinear, we need a more flexible model with more variabilities. When K is small, the model is more flexible and has more variabilities. So K should be smaller.**
+
+##Problem 5
+
+**(a)**
+
+**When our interval is between (0.05, 0.95), no matter what x is, it will fall within (x-0.05, x+0.05), the fraction would be 10%. When x<0.05, the interval would be(0, x+0.05), the fraction would be (100x+5)%. When x>0.95, the interval would be(x-0.05, 1), the fraction would be (105-100x)%.** 
+
+**If we take the integral of the fractions, we can figure out what the average fraction is. We use % as the unit of the numbers. **
+
+**So:** 
+
+**integral(0 to 0.05)(100x+5) + integral(0.05 to 0.95)(10) + integral(0.95 to 1)(105-100x) = 100(x^2/2)(0 to 0.05) + 5(x)(0 to 0.05) + 10(x)(0.05 to 0.95) + 105(x)(0.95 to 1) - 50(x^2)(0.95 to 1)** 
+
+**= 50(0.05^2) + 5(0.05) + 10(0.9) + 105(0.05) - 100(1/2 - 0.95^2/2)** 
+**= 0.125 + 0.25 + 9 + 5.25 -4.875 = 9.75(%)**
+
+**So our average fraction to make the prediction is 9.75%.** 
+
+**(b)**
+
+Since p = 2, and distributed on [0,1]*[0,1], our average fraction would be (9.75%)^2 = 0.009506 = 0.9506%
+
+**(c)**
+
+**Since p = 100, our average fraction would be (9.75%)^100 which equals approximately to 0.** 
+
+**(d)**
+
+**When the feature is too large, as we can see from c, the fraction of availabe observation will become extremely small even approaching 0. So when p is large, there are very few training observations. **
+
+**(e)**
+
+**The fraction is 0.1.** 
+
+**When p = 1, the hypercube is a line, so the lengh is 0.1. **
+
+**When p = 2, the hypercube is a square, so the side is (0.1)^(1/2) = 0.31625.** 
+
+**When p = 100, the hypercube is a 100-dimensional cube, so the side is (0.1)^(1/100) = 0.9772**
