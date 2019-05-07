@@ -1,0 +1,256 @@
+##Problem 1
+
+
+
+**(a)**
+In JackKnife, we remove the ith element from the value and find the largest frequency among the (n-1) samples. 
+
+So when remove ith element, the maximum would be 240, until i = 10, then the maximum would be 239. 
+
+So, theta_hat = 240
+    
+    theta_hat(-i) = 240, 240, 240, 240, 240, 240, 240, 240, 240, 239. 
+
+    theat_hat(.) = ((240*9) + 239) / 10 = 239.9
+    
+    theat_hat(JK) = n*theta_hat - (n-1)*theta_hat(.) = 240*10 - 239.9*9 = 240.9
+    
+So, JackKnife estimator of the highest frequency of human voice is 240.9. 
+
+
+**(b)**
+Same as above, when we remove the ith element and find the smallest frequency among the (n-1) samples. 
+
+When remove its ith element, the minimum would be 102 except when i = 1. 
+
+So, theta_hat = 102
+    
+    theat_hat(-i) = 115, 102, 102, 102, 102, 102, 102, 102, 102, 102
+    
+    theta_hat(.) = ((115) + 102*9)/10 = 103.3
+    
+    theat_hat(JK) = 102 * 10 - 103.3 * 9 = 90.3. 
+    
+So, JackKnife estimator of the lowest frequency of human voice is 90.3. 
+    
+    
+**(c)**
+Supposed we have a sample (X1, X2.......Xn-1, Xn) ranked from smallest to biggest. 
+
+     theta_hat(JK_max) = n * Xn - ((n-1)/n) * (Xn * (n-1) + Xn-1)
+     theta_hat(JK_min) = n * X1 - ((n-1)/n) * (X1 * (n-1) + X2)
+     
+     
+     
+##Problem 2
+
+**(a)**
+
+since lambda_hat = mean(X)
+
+So, theta_hat = e^(-18/40) = 0.63763
+
+    theta_hat(-i: take away 1 day no accident) = e^(-18/39)
+    
+    theta_hat(-i: take away 1 day with 1 accident) = e^(-17/39)
+    
+    theta_hat(-i: take away 1 day with 2 accidents) = e^(-16/39)
+    
+    theta_hat(.) =  (26* e^(-18/39) + 10 * e^(-17/39) + 4 * e^(-16/39)) / 40 = 0.63772
+    
+    theta_bias = (n-1) * (theta_hat(.) - theta_hat) = (40-1) * (0.63772 - 0.63763)  = 
+(39) * (0.00009) = 0.00351
+    
+**(b)**
+
+theta_hat(JK) = theta_hat - theta_hat(bias) = 0.63763 - 0.00351 = 0.63412
+
+
+**(c)**
+
+p_hat = 26/40
+
+p_hat(-i: day with accident) = 25/39
+
+p_hat(-i: day no accident) = 26/39
+
+p_hat(.) = ((25/39) * 26 + (26/39) * 14)/40 = 26/40
+
+p_hat(bias) = (40-1)*(p_hat(.) - p_hat) = 0 
+
+p_hat(JK) = 26/40 = p_hat
+
+The result occurs because p_hat is an unbiased estimator, therefore Jackknife estimator is the same as the original estimator. 
+
+**(d)**
+
+p_hat(-i: day with accident) = 25/39
+
+std(p_hat) = sqrt(((26/40) * (14/40))/40) = 0.0754
+
+std(p_hat(-i: day with accident) = sqrt(((25/39) * (14/39))/39) = 0.0768
+
+p_hat(-i: day without accident) = 26/39
+
+std(p_hat(-i: day without accident) = sqrt(((26/39) * (13/39))/39) = 0.0754
+
+std(p_hat(.) = ((0.0754 * 14) + (0.0768 * 26))/40 = 0.07631
+
+bias = (n-1) * (std(p_hat(.) - std(p_hat))) = (39)(0.07631 - 0.0754) = 39 * (0.0091) = 0.03549
+
+We propose the Jackknife estimator for the standard deviation sp_hat(JK)
+
+sp_hat(JK) = std(p_hat)  - bias = 0.0754 - 0.03549 = 0.03991. 
+
+
+
+
+
+##Problem 3
+
+**(a)**
+**Validation set approach**
+```{r}
+library(ISLR)
+attach(Default)
+train_default = sample(dim(Default)[1], dim(Default)[1]/2)
+```
+
+**Use a training dataset to find the glm model without student**
+```{r}
+default_glm = glm(default ~ income + balance, data = Default, family = "binomial", subset = train_default)
+probs_default_glm = predict(default_glm, newdata = Default[-train_default, ], type = "response")
+pred_default_glm = rep("No", length(probs_default_glm))
+pred_default_glm[probs_default_glm > 0.5] = "Yes"
+validation_set_error_rate = mean(pred_default_glm != Default[-train_default, ]$default)
+```
+
+**Validation set test error without student **
+```{r}
+validation_set_error_rate
+```
+
+
+
+**Model with student**
+```{r}
+default_glm_2 = glm(default ~ income + balance + student, data = Default, family = "binomial", subset = train_default)
+probs_default_glm_2 = predict(default_glm_2, newdata = Default[-train_default, ], type = "response")
+pred_default_glm_2 = rep("No", length(probs_default_glm_2))
+pred_default_glm_2[probs_default_glm_2 > 0.5] = "Yes"
+validation_set_error_rate_2 = mean(pred_default_glm_2 != Default[-train_default, ]$default)
+```
+
+**Validation set test error with student**
+```{r}
+validation_set_error_rate_2
+```
+
+
+
+**(b)**
+
+**LOOCV**
+
+**Run the full models with and without student variable**
+```{r}
+library(boot)
+full_glm_without_student = glm(default ~ income + balance, family = "binomial", data = Default)
+
+full_glm_with_student = glm(default ~ income + balance + student, family = "binomial", data = Default)
+```
+
+
+**LOOCV for model without student**
+```{r}
+cost_function = function(r, pi) mean(abs(r-pi) > 0.5)
+
+loocv_error_rate = cv.glm(Default, full_glm_without_student, cost = cost_function)$delta[1]
+```
+
+**Test error from LOOCV for model without student**
+```{r}
+loocv_error_rate
+```
+
+
+**(c)**
+
+**K = 100 cross-validation for model without student**
+```{r}
+k_100_error_rate = cv.glm(Default, full_glm_without_student, cost = cost_function, K = 100)$delta[1]
+```
+
+
+**Test error for K = 100 cross-validation for model without student**
+```{r}
+k_100_error_rate
+```
+
+
+**K = 1000 cross-validation for model without student**
+```{r}
+k_1000_error_rate = cv.glm(Default, full_glm_without_student, cost = cost_function, K = 1000)$delta[1]
+```
+
+
+**Test error for K = 1000 cross-validation for model with student**
+```{r}
+k_1000_error_rate
+```
+
+
+**(b)**
+
+**LOOCV for model with student**
+```{r}
+loocv_error_rate_2 = cv.glm(Default, full_glm_with_student, cost = cost_function)$delta[1]
+```
+
+
+**Test error for LOOCV for model with student**
+```{r}
+loocv_error_rate_2
+```
+
+
+**(c)**
+
+**K = 100 cross-validation for model with student**
+```{r}
+k_100_error_rate_2 = cv.glm(Default, full_glm_with_student, cost = cost_function, K = 100)$delta[1]
+```
+
+
+**Test error for K = 100 cross-validation for model with student**
+```{r}
+k_100_error_rate_2
+```
+
+
+**K = 1000 cross-validation for model with student**
+```{r}
+k_1000_error_rate_2 = cv.glm(Default, full_glm_with_student, cost = cost_function, K = 1000)$delta[1]
+```
+
+
+**Test error for K = 1000 cross-validation for model with student**
+```{r}
+k_1000_error_rate_2
+```
+
+**Test errors for the model with student**
+```{r}
+with_student_error_rates = c(validation_set_error_rate_2, loocv_error_rate, k_100_error_rate, k_1000_error_rate)
+
+with_student_error_rates
+```
+
+**Test errors for the model without student**
+```{r}
+without_student_error_rates = c(validation_set_error_rate, loocv_error_rate_2, k_100_error_rate_2, k_1000_error_rate_2)
+
+without_student_error_rates
+```
+
+**It will improve the model if we exclude the student dummy variable since the test errors for both models are almost the same, so including the student dummy variable doesn't improve the model. Instead, it might result in an overfit**
