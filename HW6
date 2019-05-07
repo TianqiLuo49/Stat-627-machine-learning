@@ -1,0 +1,52 @@
+##Problem 1
+
+**(a)**
+
+**Build the x dataset based on the number of accidents**
+```{r}
+x = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+      2, 2, 2, 2)
+```
+
+
+**Bootstrap p_hat**
+```{r}
+library(bootstrap)
+library(boot)
+set.seed(485)
+bootstrap_p_hat = function(data, index){
+  p_hat_bootstrap = sum(data[index] == 0) / length(data[index])
+  return(p_hat_bootstrap)
+}
+boot(x, bootstrap_p_hat, 1000)
+```
+
+Using bootstrap method, we estimate the standard deviation to be 0.07667729.
+
+
+
+**Bootstrap theta_hat**
+```{r}
+set.seed(567)
+bootstrap_theta_hat = function(data, index){
+  theta_hat_bootstrap = exp(-mean(data[index]))
+  return(theta_hat_bootstrap)
+}
+boot(x, bootstrap_theta_hat, 1000)
+```
+Using bootstrap, we estimate the standard deviation for theta_hat to be 0.07093909.
+
+
+
+**Bootstrap theta_jackknife**
+```{r}
+set.seed(985)
+bootstrap_jackknife = function(data, index){
+  thetahat = function(data, index){return(exp(-mean(data[index])))}
+  jackknife_estimator = length(data[index]) * 
+    exp(-mean(data[index])) - mean(jackknife(data[index], thetahat)$jack.values) * 
+    (length(data[index]) - 1)
+  return(jackknife_estimator)
+  }
+boot(x, bootstrap_jackknife, 1000)
+```
