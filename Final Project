@@ -1,0 +1,220 @@
+#Stat 627 Final Project
+
+#Bank Marketing Analysis
+ 
+##Members
+**Tianqi Luo**
+
+**Kingsley Iyawe**
+
+#Dataset Introduction
+**This data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product(bank term deposit) would be "yes" or "no" subscribed.**
+
+
+#Link
+https://archive.ics.uci.edu/ml/datasets/bank+marketing
+
+
+#Summary 
+**In this project, we're looking at the Bank Marketing Data Set with the purpose of predicting whether or not the client has subscribed to a term deposit**
+
+**First, we're using multiple classification methods to predict the result and calculate the prediction accuracy, using variables age, duration and campaign**
+
+#Statistical Methods
+
+**GLM**
+
+**LDA**
+
+**QDA**
+
+**KNN, K = 1, 10, 100**
+
+**Linear Regression**
+
+**Polynomial Regression & Stepwise Regression**
+
+
+#Important Variable Introduction
+
+**y: binary variable on whether the clinet has subscribed a term deposit. (0: No. 1: Yes).**
+
+**age: clients' age(numeric)**
+
+**duration: Last contact duration, in seconds.(numeric).**
+
+**campaign: Number of contacts performed during this campaign and for this client(numeric).**
+
+
+#Analysis
+
+**Load the data**
+```{r}
+bank = read.csv("./bank full.csv", sep = ";")
+
+head(bank)
+```
+
+**Attach the data**
+```{r}
+attach(bank)
+```
+
+
+
+
+##Using GLM to predict the variable
+
+**Fit the model by using glm**
+```{r}
+subscribed_glm = glm(y ~ age + duration + campaign , data = bank, family = "binomial")
+
+summary(subscribed_glm)
+```
+**We can see that age, duration, campaign are all significant**
+
+
+**Calculate the prediction accuracy, design the training and test data**
+```{r}
+n = length(age)
+train = 1:(n/2)
+test = (n/2 + 1) : n
+bank_train = bank[train, ]
+bank_test = bank[test, ]
+```
+
+
+**Calculate the prediction accuracy for glm**
+```{r}
+subscribed_glm_train = glm(y ~ age + duration + campaign, data = bank_train, family = binomial)
+probs_new = predict(subscribed_glm_train, bank_test, type = "response")
+pred_glm_bank = rep("no", length(probs_new))
+pred_glm_bank[probs_new > 0.5] = "yes"
+subscribed_test = bank$y[test]
+table(pred_glm_bank, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_glm = (18213 + 296) /(18213 + 296 + 191 + 3905)
+prediction_accuracy_glm
+```
+
+**Prediction accuracy for glm model is 81.88%**
+
+
+##Using LDA for the same model
+
+**Fit the model using LDA**
+```{r}
+library(MASS)
+subscribed_lda = lda(y ~age + duration + campaign, data = bank_train)
+pred_lda_bank = predict(subscribed_lda, bank_test)
+table(pred_lda_bank$class, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_lda = (17987 + 586) /(17987 + 3615 + 417 + 586)
+prediction_accuracy_lda
+```
+**The prediction accuracy for LDA is 82.16%**
+
+
+##Use QDA for the same model
+
+**Fit the model using QDA and calculate the prediction accuracy**
+```{r}
+subscribed_qda = qda(y ~age + duration + campaign, data = bank_train)
+pred_qda_bank = predict(subscribed_qda, bank_test)
+table(pred_qda_bank$class, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_qda = (17982 + 595) / (17982 + 3606 + 422 + 595)
+prediction_accuracy_qda
+```
+
+**Prediction accuracy for qda is 82.18%**
+
+#Use KNN for the same model
+
+
+##KNN = 1
+```{r}
+library(class)
+set.seed(1)
+bank_train_data = cbind(age, duration, campaign)[train, ]
+bank_test_data = cbind(age, duration, campaign)[test, ]
+subscribed_train = bank$y[train]
+pred_knn_bank_1 = knn(bank_train_data, bank_test_data, subscribed_train, 1)
+table(pred_knn_bank_1, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_knn_1 = (17861 + 560) /(17861 + 3641 + 543 + 560)
+prediction_accuracy_knn_1
+```
+
+**When K = 1, the prediction accuracy is 81.49%**
+
+##KNN = 10
+```{r}
+set.seed(1)
+pred_knn_bank_10 = knn(bank_train_data, bank_test_data, subscribed_train, 10)
+table(pred_knn_bank_10, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_knn_10 = (18142 + 380) /(18142 + 3821 + 262 + 380)
+prediction_accuracy_knn_10
+```
+
+**When K = 10, the prediction accuracy is 81.94%**
+
+
+##KNN = 100
+```{r}
+set.seed(1)
+pred_knn_bank_100 = knn(bank_train_data, bank_test_data, subscribed_train, 100)
+table(pred_knn_bank_100, subscribed_test)
+```
+
+```{r}
+prediction_accuracy_knn_100 = (18172 + 366) / (18172+ 3835 + 232 + 366)
+prediction_accuracy_knn_100
+```
+
+**When K = 100, the prediction accuracy is 82.0%**
+
+#Linear Regression
+
+**Now, we use linear regression to see if there is a correlation between the predictors, use duration as the response and age and campaign as the predictors**
+
+```{r}
+fit_duration = lm(duration ~ age + campaign + I(age * campaign), data = bank)
+summary(fit_duration)
+```
+**We can see that only campaign is significant since its p-value is smaller than 0.05, there is no interaction between age and campaign**
+
+#Polynomial and Stepwise Regression
+
+```{r}
+fit_polynomial_duration = lm(duration ~ age + I(age^2) + campaign + I(campaign^2) + I(age * campaign), data = bank)
+
+null = lm(duration ~1 , data = bank)
+
+reg_1 = step(null, scope = list(lower = null, upper = fit_polynomial_duration), direction = "forward")
+```
+
+**Using the stepwise forward selection, the final equation for duration is duration = campaign + I(campaign ^ 2)**
+
+#Conclusion 
+
+**1. Age, duration and campaign are all significant predictors in the clients' decision to subscribe a term deposit**
+
+**2. GLM, LDA and QDA all have very high prediction accuracy, although QDA has slightly higher accuracy, then LDA, then GLM**
+
+**3. KNN models also yield very high prediction accuracy, when K = 100, the accuracy is the highest at 82%**
+
+**4. Only campaign is significant in predicting the duration, age is not statistically significant**
+
+**5. The best polynomial model based on stepwise regression is duration = campaign + I(campaign ^ 2)**
