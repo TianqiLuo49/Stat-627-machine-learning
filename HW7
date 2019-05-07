@@ -1,0 +1,333 @@
+##Stat 627 HW7
+
+##Tianqi Luo
+
+##Problem 1
+
+**(a)**
+```{r}
+set.seed(1)
+x1 = runif(100)
+x2 = 0.5*x1 + rnorm(100)/10
+y = 2 + 2*x1 + 0.3*x2 + rnorm(100)
+```
+
+**The form is y = 2+ 2*x1 + 0.3*x2 + sigma, with sigma being a random variable at N(0,1). The regression coefficients are 2, 2, and 0.3**
+
+**(b)**
+```{r}
+cor(x1,x2)
+```
+
+**The correlation between X1 and X2 is 0.8351**
+
+**Create the scatterplot**
+```{r}
+plot(x1,x2)
+```
+
+
+**(c)**
+```{r}
+fit_x1_x2 = lm(y ~ x1 + x2)
+summary(fit_x1_x2)
+```
+**Beta0_hat = 2.1305, beta1_hat = 1.4396, beta2_hat = 1.0097**
+
+**True beta_0 = 2, true beta_1 = 2, true beta_2 = 0.3**
+
+**Yes, we can reject the null hypothesis H0: B1 = 0 because the p-value is smaller than our level of significance(0.05)**
+
+**No, we can't reject the null hypothesis H0: B2 = 0 because the p-value is greater than our level of signifiicance(0.05)**
+
+
+
+**(d)**
+```{r}
+fit_x1 = lm(y ~ x1)
+summary(fit_x1)
+```
+**Yes we can reject the null hypothesis at H0:B1 = 0 because the p-value is smaller than the level of significance(0.05)**
+
+**(e)**
+```{r}
+fit_x2 = lm(y ~ x2)
+summary(fit_x2)
+```
+**Yes we can reject the null hypothesis at H0: B2 = 0 because the p-value is smaller than the level of significance(0.05)**
+
+**(f)**
+No, they don't contradict each other because when x1 and x2 are used as predictors, their correlation is very large, resulting in multicollinearity resulting in higher standard errors for the predictors, which may affect the p-value and affect our decision. 
+
+
+
+**(g)**
+
+**Refit model(c)**
+```{r}
+x1 = c(x1, 0.1)
+x2 = c(x2, 0.8)
+y = c(y,6)
+
+fit_observed_x1_x2 = lm(y ~ x1 + x2)
+summary(fit_observed_x1_x2)
+```
+
+
+**Refit model (d)**
+```{r}
+fit_observed_x1 = lm(y ~ x1)
+summary(fit_observed_x1)
+```
+
+**Refit model (e)**
+```{r}
+fit_observed_x2 = lm(y ~ x2)
+summary(fit_observed_x2)
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(fit_observed_x1_x2)
+```
+**The observation is a high-leverage point in this regression model according to the graph**
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(fit_observed_x1)
+```
+**The observation is both an outlier and a high-leverage point according to the graph**
+
+```{r}
+par(mfrow = c(2,2))
+plot(fit_observed_x2)
+```
+**The observation is a high-leverage point for this regression model according to the graph**
+
+**(h)**
+```{r}
+summary(fit_x1_x2)
+```
+
+**The standard errors are 0.7212 and 1.1337**
+
+```{r}
+summary(fit_x1)
+```
+
+**The standard error is 0.3963**
+
+```{r}
+summary(fit_x2)
+```
+**The standard error for the slope is 0.6330**
+
+The models in (d) and (e) produce more stable and reliable results because they yield smaller standard errors
+
+
+**(i)**
+```{r}
+library(car)
+vif(fit_x1_x2)
+```
+**We can see the vifs are pretty high for x1 and x2, affecting the accuracy of this model**
+
+
+##Problem 2
+
+Lasso - Statement iii applies to Lasso because Lasso is a shrinkage method that minimizes the residual sums of squares and will improve the prediction accuracy when its increase in bias is less than its decrease in variance. 
+
+Ridge - Statement iii applies to Ridge because ridge is a shrinkage method that minimizes the residual sums of squares, thus it will improve the prediction accuracy when its increase in bias is less than its decrease in variance. 
+
+Fitting nonlinear trends - Statement ii applies to nonlinear trends because it's more flexlbe than least squares and will yield better prediction accuracy when its increase in variance is less than its decrease in bias. 
+
+
+
+
+
+##Problem 3
+
+**For ridge, n=p=1, x =1, Lambda = 1, Y = 1, RSS = (1-beta)^2 + beta^2**
+
+**Plot Ridge**
+```{r}
+lambda = 1 
+y = 1
+curve( (1-x)^2 + x^2, -10, 10, xlab = "beta", ylab = "RSS")
+points(y/(1+lambda), (1-y/(1+lambda))^2 + (y/(1+lambda)^2))
+```
+
+**We can see for ridge, min RSS is attained at beta = Y/(1+lambda)**
+
+
+
+
+For Lasso, n = p = 1, X = 1, RSS = (y-beta)^2 + lambda*abs(beta)
+**Plot Lasso**
+**Y > lambda/2, Y = 1, Lambda = 1**
+```{r}
+curve( (1-x)^2 + abs(x), -5, 5, xlab = "beta", ylab = "RSS")
+
+points(y - lambda/2, (1-(y-lambda/2))^2 + abs(y-lambda/2))
+```
+
+**For Y > lambda/2, min RSS is attained at Beta = Y - lambda/2. **
+
+
+
+
+**Y < -lambda/2, Y = -1, Lambda = 1**
+```{r}
+y = -1
+lambda = 1
+curve( (-1-x)^2 + abs(x), -5, 5, xlab = "beta", ylab = "RSS")
+
+points(y + lambda/2, (-1-(y+lambda/2))^2 + abs(y + lambda/2))
+```
+
+**For Y < -lambda/2, min RSS is obtained at Beta = Y + lambda/2.**
+
+
+
+
+**|Y| <= lambda/2, Y = 1/2, lambda = 1**
+```{r}
+y = 1/2
+lambda = 1
+curve( (1/2 - x)^2 + abs(x), -5, 5, xlab = "beta", ylab = "RSS")
+points(0, (1/2)^2)
+```
+
+**For |Y|<= lambda/2, min RSS is obtained at Beta = 0**
+
+
+
+**(b)**
+
+**BetaRidge = Y/(1+lambda), Y = 1**
+
+**Plot BetaRidge**
+```{r}
+y = 1
+curve(1/(1+x), -10, 10, xlab = "lambda", ylab = "BetaRidge")
+```
+
+**BetaRidge would never equal to 0**
+
+
+
+
+
+**(1)BetaLasso =  Y - lambda/2 (Y > lambda/2)**
+**(2)BetaLasso =  Y + lambda/2 (Y < -lambda/2)**
+**(3)BetaLasso = 0  (|Y| < = lambda/2)**
+
+**Plot BetaLasso**
+```{r}
+curve( (x <(-2))*( 1 + x/2 ) +       
+       (!(x < (-2))&(x<2) )*(1 - x/2) + 
+        (x >=2)*(0) ,
+        -10,10, xlab = "lambda", ylab = "BetaLasso")  
+```
+
+**We can see when the penalty term is high, BetaLasso turns into 0**
+
+
+
+##Problem 3
+
+**(a)**
+```{r}
+set.seed(2)
+X = rnorm(100)
+E = rnorm(100)
+```
+
+**(b)**
+```{r}
+b0 = 4
+b1 = 0.5
+b2 = -0.6
+b3 = 3
+Y = b0 + b1*X +b2*(X^2) + b3*(X^3) + E
+```
+
+
+**(c)**
+```{r}
+full = lm(Y ~ X + I(X^2) + I(X^3))
+null = lm(Y ~ 1)
+reg_1 = step(null, scope = list(lower = null, upper = full), direction = "forward")
+```
+**Using the stepwise forward selection, the final equation is Y = I(X^3) + I(X^2) + X, all the predictors are kept**
+
+
+
+**(d)**
+```{r}
+library(glmnet)
+model_1 = model.matrix(Y ~ X + I(X^2) + I(X^3))[, -1]
+cv.lasso = cv.glmnet(model_1, Y, alpha = 1)
+plot(cv.lasso)
+```
+
+
+
+
+**We find the bestlambda, the lambda value selected by the cross-validation**
+```{r}
+bestlambda = cv.lasso$lambda.min
+
+bestlambda
+```
+
+**We use the lambda = bestlambada to see what values get eliminated by lambda**
+```{r}
+fit.lasso = glmnet(model_1, Y, alpha = 1)
+predict(fit.lasso, s = bestlambda, type = "coefficients")[1:4, ]
+```
+**We can see that none of the values are eliminated, all of them are kept**
+
+
+
+**(e)**
+```{r}
+b7 = 6
+Y1 = b0 + b7 * X^7 + E
+```
+
+
+**Using stepwise**
+```{r}
+full_2 = lm(Y1 ~ I(X^7))
+null_2 = lm(Y1 ~ 1)
+reg_2 = step(null_2, scope = list(lower = null_2, upper = full_2), direction = "forward")
+```
+
+
+**Using Lasso**
+**We can see that only the predictor I(X^7) is kept, so the final model is Y = I(X^7)** 
+
+```{r}
+model_2 = model.matrix(Y1 ~ I(X^7))
+cv.lasso = cv.glmnet(model_2, Y1, alpha = 1)
+plot(cv.lasso)
+```
+
+**Work out the best lambda to use for lasso cross-validation**
+```{r}
+bestlam = cv.lasso$lambda.min
+bestlam
+```
+
+
+
+```{r}
+fit.lasso = glmnet(model_2, Y1, alpha = 1)
+predict(fit.lasso, s = bestlam, type = "coefficients")[1:3, ]
+```
+**Using lasso prediction, it keeps the predictor I(X^7), so the final model is Y = I(X^7)**
+
+**Stepwise selection and lasso model generate the same results**
+                       
