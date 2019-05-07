@@ -1,0 +1,225 @@
+##Stat 627 Homework 11
+
+##Tianqi Luo
+
+##Problem 1
+
+![Problem 1](/Users/naughtyboy35/Desktop/Stat 627 /HW/HW11/1.jpeg)
+
+##Problem 2
+**See Page 2**
+
+![Problem 2](/Users/naughtyboy35/Desktop/Stat 627 /HW/HW11/2.jpeg)
+
+
+
+
+
+
+
+
+
+
+
+![Problem 2](/Users/naughtyboy35/Desktop/Stat 627 /HW/HW11/3.jpeg)
+
+
+
+##Problem 3
+
+**(a)**
+```{r}
+x1 = c(3, 2, 4, 1, 2, 4, 4)
+x2 = c(4, 2, 4, 4, 1, 3, 1)
+colors = c("red", "red", "red", "red", "blue", "blue", "blue")
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+```
+
+**(b)**
+
+**We know the line has to go through the midpoints of (2, 1), (2, 2), and (4,3) and (4,4), namely (2, 1.5) and (4, 3.5)**
+
+**So the function is X2 = X1 - 0.5, namely X1 - 0.5 - X2 = 0**
+
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+```
+
+**(c)**
+
+**Plug in (0,0), 0-0.5-0 < 0. So if X1 - X2 - 0.5 < 0, classify as "red", else, classify as "blue". **
+
+
+**(d)**
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+abline(0, 1, lty = 2)
+abline(-1, 1, lty = 2)
+```
+
+Margin is the width between the maximal margin classifier, so in this case it should be (1*tan(45))/2 = (sqrt(2))/4 = 0.35355
+
+**(e)**
+**The support vectors are the ones lying on the maximal marginal classifiers, namely (2,1), (2, 2), (4,2), (4,4)**
+
+**(f)**
+**The movement of the seventh obervation would not affect the maximal margin hyperplane as it's not a support vector**
+
+**(g)**
+
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.7, 1)
+```
+
+**The equation is X1 - X2 - 0.7 = 0**
+
+**(h)**
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+points(1, 3, col = "blue")
+```
+
+##Problem 4
+
+**(a)**
+```{r}
+library(ISLR)
+attach(Auto)
+library(e1071)
+```
+
+```{r}
+Auto
+```
+
+
+**Build the binary variable**
+```{r}
+attach(Auto)
+level = rep(0, length(Auto$mpg))
+level[Auto$mpg > median(Auto$mpg)] = 1
+level = as.factor(level)
+A = data.frame(level, Auto)
+```
+
+
+**(b)**
+**Run the cross validation for linear SVM**
+```{r}
+set.seed(49)
+SVMlinear = tune(svm, level ~., kernel = "linear", data = A, ranges = list(cost = 10^seq(-3, 3, 1)))
+```
+
+**Summary for linear SVM**
+```{r}
+summary(SVMlinear)
+```
+
+**At cost 1, the linear SVM seems to perform the best**
+
+
+**(c)**
+
+**Run cross validation for the polynomial SVM**
+```{r}
+set.seed(49)
+svmPolynomial = tune(svm, level ~., data = A, kernel = "polynomial", ranges = list(cost = 10^seq(-3, 3, 1) , degree = c(2,3,4)))
+```
+
+
+**Summary for polynomial SVM**
+```{r}
+summary(svmPolynomial)
+```
+
+**The polynomial SVM performs the best when cost = 1000 and degree = 2**
+
+
+**Run a cross-validation for the radial SVM**
+```{r}
+set.seed(49)
+SVMradial = tune(svm, level ~., data = A, kernel = "radial", ranges = list(cost = 10^seq(-3, 3, 1), gamma = 10^seq(-3, 3, 1)))
+```
+
+**Run the summary for the radial SVM**
+```{r}
+summary(SVMradial)
+```
+
+**The radial SVM performs the best when cost = 1000 and gamma = 0.001**
+
+**(d)**
+
+**We'll take a look at the plots between mpg and displacement, horsepower, and weight and see if the classifier clearly separates the categories**
+
+## SVMlinear
+
+**SVMlinear: mpg vs displacement**
+```{r}
+best_svmlinear = svm(level~., data = A, kernel = "linear", cost = 1)
+
+plot(best_svmlinear, data = A, mpg~displacement)
+```
+
+
+**SVMlinear: mpg vs horsepower**
+```{r}
+plot(best_svmlinear, data = A, mpg ~ horsepower)
+```
+
+**SVMlinear: mpg vs weight**
+```{r}
+plot(best_svmlinear, data = A, mpg ~ weight)
+```
+
+**We can see when cost = 1, the linear SVM yields the best results**
+
+
+## SVMpolynomial
+
+
+**SVMpolynomial: mpg vs displacement**
+```{r}
+best_svmpolynomial = svm(level~., data = A, kernel = "polynomial", cost = 1000, degree = 2)
+
+plot(best_svmpolynomial, data = A, mpg~displacement)
+```
+
+**SVMpolynomial: mpg vs horsepower**
+```{r}
+plot(best_svmpolynomial, data = A, mpg~horsepower)
+```
+
+**SVMpolynomial: mpg vs weight**
+```{r}
+plot(best_svmpolynomial, data = A, mpg~weight)
+```
+
+**We can see when cost = 1000, degree = 2, SVM polynomial classifier yields the best results**
+
+
+
+##SVMRadial 
+
+**SVMRadial: mpg vs displacement**
+```{r}
+best_svmradial = svm(level~., data = A, kernel = "radial", cost = 1000, gamma = 0.001)
+
+plot(best_svmradial, data = A, mpg~displacement)
+```
+
+
+**SVMRadial: mpg vs horsepower**
+```{r}
+plot(best_svmradial, data = A, mpg ~ horsepower)
+```
+
+**SVMRadial: mpg vs weight**
+```{r}
+plot(best_svmradial, data = A, mpg ~ weight)
+```
+
+**We can see when cost = 1000, gamma = 0.001, the radial SVM yields the best results**
