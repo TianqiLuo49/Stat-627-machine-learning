@@ -1,0 +1,51 @@
+##Homework 4##
+
+##Tianqi Luo##
+
+##Problem 1
+
+**(a)**
+If the Bayes decision boundary is linear, we can expect the training set for QDA to perform better because it is more flexible, and can provide a closer fit when we don't know the boundary. For the test set, we can expect the LDA to perform better because the bayes decision boundary is linear and LDA can provide a more precise fit, QDA would overfit the boundary. 
+
+**(b)**
+If the Bayes decision boundary is non-linear, we can expect the training set for the QDA to perform better because it is more flexible, and can provide a closer fit when we don't know the boundary. For the test set, the QDA is also going to perform better because the real boundary is non-linear and QDA is more flexible and can provide a closer fit. 
+
+**(c)**
+Since QDA is more flexible than LDA and is used to fit large training set, so QDA wouldn't overfit the data regardless of the variance. However, the test prediction accuracy of LDA might be worse since LDA is a less flexible, so the test prediction of QDA relative to LDA would either be unchanged or improve. 
+
+**(d)**
+False, since the decision boundary is linear and QDA is a more flexible model, using QDA would result in an overfit of the boundary, resulting in an inferior test error rate. 
+
+
+##Problem 2
+
+Assume event A: Dividend issued, event B: X = 4. 
+
+P(A|B) = [P(B|A) * P(A)]/P(B) = [P(B|A) * P(A)]/[P(B|A) * P(A') + P(B|A) * P(A')]
+
+P(A) = 0.8, P(A') = 0.2
+
+P(B|A) follows the normal distribution, given A, u = 10, x = 4
+>>> P(B|A) = e^(-(4-10)^2 /72) * 0.8 * (1/(6 * sqrt(2*pi)))
+
+P(B|A') follow the normal distribution, given A', u = 0, x = 4
+>>> P(B|A') = e^(-(4-0)^2 /72) * 0.2 * (1/(6 * sqrt(2*pi)))
+
+P(A|B) = [P(B|A) * P(A)]/[P(B|A) * P(A') + P(B|A) * P(A')] 
+
+Cancel out (1/(6 * sqrt(2*pi))) >>> = (0.607 * 0.8) /[(0.607 * 0.8) + (0.801 * 0.2)] = 0.4856/(0.4856 + 0.1602) = 0.4856/0.6458 = 0.7519
+
+So, the probability company will issue a divend this year given that its percentage profit was X = 4 last year is 75.19%. 
+
+
+
+
+
+
+##Problem 3
+
+**(a)**
+```{r}
+library(ISLR)
+attach(Weekly)
+```
