@@ -1,0 +1,169 @@
+##Stat 627 HW9
+
+##Tianqi Luo
+
+##Problem 1
+
+```{r}
+beta_0 = 1
+beta_1 = 1
+beta_2 = -2
+```
+
+```{r}
+x = seq(-2, 2, 0.01)
+b1 = x
+b2 = (x-1)^2 * I(x>=1)
+y = beta_0 + beta_1 * b1 + beta_2 * b2
+```
+
+```{r}
+plot(x,y, xlim = c(-2, 2), type = "l" )
+```
+
+**The line is linear from -2 to 1, with a slope of 1, it has a knot at x = 1, and then it becomes quadratic between 1 and 2**
+
+
+##Problem 2
+```{r}
+beta_0 = 1
+beta_1 = 1
+beta_2 = 3
+b1 = I(x>= 0 & x <= 2) - (x-1)*I(x>= 1 &  x<= 2)
+b2 = (x-3)*I(x >= 3 & x <= 4) + I(x > 4 & x <= 5)
+```
+
+```{r}
+y = beta_0 + beta_1 * b1 + beta_2 * b2 
+plot(x, y, xlim = c(-2, 2), type = "l")
+```
+
+**The curve is constant between -2 and 0 at y = 1, it's constant between 0 and 1 at y = 2, it's linear at 1 and 2 with a slope of -1 **
+
+
+##Problem 3
+
+**(a)**
+```{r}
+library(ISLR)
+attach(Auto)
+```
+
+```{r}
+library(boot)
+MSEP = rep(NA, 10)
+```
+
+```{r}
+for(p in 1:10) {
+  poly = glm( acceleration ~ poly(horsepower, p))
+  MSEP[p] = cv.glm(Auto, poly)$delta[2]
+}
+```
+
+```{r}
+plot(MSEP)
+lines(MSEP)
+```
+
+```{r}
+min(MSEP)
+```
+**The optimal degree for polynomial regression is 5**
+
+
+**(b)**
+```{r}
+library(splines)
+plot(horsepower, acceleration)
+spline = lm(acceleration ~ bs(horsepower, knots = 150))
+Yhatknots = predict(spline)
+points(horsepower, Yhatknots, lwd = 3, col = "red")
+```
+
+**(c)**
+
+
+```{r}
+plot(horsepower, acceleration)
+smooth = smooth.spline(horsepower, acceleration, cv = TRUE)
+lines(smooth$x, smooth$y, lwd = 3, col = "blue")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+##Problem 4
+
+**Since we have to minimize the RSS, we have the make the second part of the equation 0. Since lambda = infinity, g^(m) have to be 0**
+
+**When m = 0, g^(m) = g(x) = 0, so g_hat = 0**
+```{r}
+x = seq(-5, 5, 0.5)
+g_hat = rep(0, length(x))
+
+plot(x,g_hat)
+abline(h = 0)
+```
+
+**(b)** 
+
+**When lambda = infinity, m = 1, g^(1)(x) has to become 0, so the first derivative of g(x) has to be 0, so g_hat is a constant**
+
+**Example, g_hat = 2**
+```{r}
+g_hat = rep(2, length(x))
+plot(x, g_hat)
+abline(h = 2)
+```
+
+**(c)**
+
+**When labmda = infinity, m = 2, so g^(2)(x) has to become 0, so the second derivative of g(x) has to be 0, so g_hat is a linear function**
+
+**Example: g_hat = 3x + 2**
+
+```{r}
+g_hat = 3*x + 2
+plot(x, g_hat)
+abline(a = 2, b = 3)
+```
+
+**(d)**
+
+**When lambda = infinity, m = 3, so g^(3)(x) has to become 0, so the third derivative of g(x) has to be 0, so g_hat is a second degree polynomial**
+
+**Example: g_hat = 3x^2 + 2x + 5**
+```{r}
+g_hat = 3*(x^2) + 2*x + 5
+curve(3*(x^2) + 2*x+ 5, -5, 5, ylab = "g_hat")
+```
+
+
+
+
+**(e)**
+
+**Since lambda = 0, we just have to minimize the RSS. g_hat can be any function that goes through all the points, since that would make RSS 0**
+
+**If there is no function that goes through all the points, then g_hat is the spline that best fits all the points since it would minimize the RSS**
+
+**Example**
+```{r}
+x = rnorm(100)
+y = rnorm(100)
+poly = lm(y ~ poly(x, 5))
+Yhat = predict(poly)
+plot(x, y)
+points(x, Yhat, col = "red", lwd = 3)
+```
+
+**In this case, g_hat is the spline that best fits all the points and minimizes the RSS**
